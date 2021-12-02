@@ -1,26 +1,49 @@
 use super::input::INPUT_PATH;
+use anyhow::{anyhow, Error, Result};
+use itertools::Itertools;
 use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 
 static DAY: i16 = 2;
 
+#[derive(Default)]
 struct Position {
     horiz: i64,
     depth: i64,
 }
 
+#[derive(Default)]
 struct PartOneSubmarine {
     position: Position,
 }
 
+#[derive(Default)]
 struct PartTwoSubmarine {
     position: Position,
     aim: i64,
 }
 
-struct Movement<'a> {
-    direction: &'a str,
+enum Direction {
+    Forward,
+    Down,
+    Up,
+}
+
+impl FromStr for Direction {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Direction, Self::Err> {
+        match s {
+            "forward" => Ok(Direction::Forward),
+            "down" => Ok(Direction::Down),
+            "up" => Ok(Direction::Up),
+            _ => Err(anyhow!("Bad direction string `{}`", s)),
+        }
+    }
+}
+
+struct Movement {
+    direction: Direction,
     displacement: i64,
 }
 
@@ -31,10 +54,9 @@ trait Moveable {
 impl Moveable for PartOneSubmarine {
     fn update_position(&mut self, movement: &Movement) {
         match movement.direction {
-            "forward" => self.position.horiz += movement.displacement,
-            "down" => self.position.depth += movement.displacement,
-            "up" => self.position.depth -= movement.displacement,
-            &_ => panic!("Invalid movement instruction encountered."),
+            Direction::Forward => self.position.horiz += movement.displacement,
+            Direction::Down => self.position.depth += movement.displacement,
+            Direction::Up => self.position.depth -= movement.displacement,
         }
     }
 }
@@ -42,41 +64,38 @@ impl Moveable for PartOneSubmarine {
 impl Moveable for PartTwoSubmarine {
     fn update_position(&mut self, movement: &Movement) {
         match movement.direction {
-            "forward" => {
+            Direction::Forward => {
                 self.position.horiz += movement.displacement;
                 self.position.depth += movement.displacement * self.aim;
             }
-            "down" => self.aim += movement.displacement,
-            "up" => self.aim -= movement.displacement,
-            &_ => panic!("Invalid movement instruction encountered."),
+            Direction::Down => self.aim += movement.displacement,
+            Direction::Up => self.aim -= movement.displacement,
         }
     }
 }
 
-fn parse_movement(instruction: &str) -> Result<Movement, std::num::ParseIntError> {
-    let fields: Vec<&str> = instruction.split_whitespace().collect();
-    let displacement = i64::from_str(fields[1])?;
-    return Ok(Movement {
-        direction: fields[0],
-        displacement: displacement,
-    });
+fn parse_movement(instruction: &str) -> Result<Movement> {
+    let (f0, f1) = instruction
+        .split_whitespace()
+        .collect_tuple()
+        .ok_or_else(|| anyhow!("Unable to split `{}` on whitespace", instruction))?;
+    let direction = Direction::from_str(f0)?;
+    let displacement = i64::from_str(f1)?;
+    Ok(Movement {
+        direction,
+        displacement,
+    })
 }
 
 pub fn run() {
     let data_str = fs::read_to_string(&Path::new(INPUT_PATH).join(format!("day_{:02}.txt", DAY)))
         .expect("Something went wrong reading data file.");
-    let instructions: Vec<Movement> = data_str
-        .split_terminator("\n")
-        .filter_map(|word| parse_movement(word).ok())
-        .collect();
-    let mut sub_1 = PartOneSubmarine {
-        position: Position { horiz: 0, depth: 0 },
-    };
-    let mut sub_2 = PartTwoSubmarine {
-        position: Position { horiz: 0, depth: 0 },
-        aim: 0,
-    };
-    for instr in instructions {
+    let mut sub_1 = PartOneSubmarine::default();
+    let mut sub_2 = PartTwoSubmarine::default();
+    for instr in data_str
+        .split_terminator('\n')
+        .map(|line| parse_movement(line).expect("Unable to parse a line!"))
+    {
         sub_1.update_position(&instr);
         sub_2.update_position(&instr);
     }

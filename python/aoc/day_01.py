@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import Generator, Sequence
+from typing import Sequence
 
 from aoc.input import INPUT
 

@@ -5,24 +5,24 @@ use std::str::FromStr;
 
 static DAY: i16 = 1;
 
-fn count_increases(data: &Vec<i32>) -> i16 {
+fn count_increases(data: &[i32]) -> i16 {
     let mut count = 0;
     for idx in 1..data.len() {
         if data[idx] > data[idx - 1] {
             count += 1;
         }
     }
-    return count;
+    count
 }
 
-fn three_element_sums(data: &Vec<i32>) -> Vec<i32> {
+fn three_element_sums(data: &[i32]) -> Vec<i32> {
     let mut sums = Vec::<i32>::new();
     for (idx, _) in data.iter().enumerate() {
         if idx >= 2 {
             sums.push(data[idx - 2] + data[idx - 1] + data[idx])
         }
     }
-    return sums;
+    sums
 }
 
 pub fn run() {

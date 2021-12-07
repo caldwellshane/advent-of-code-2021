@@ -32,7 +32,9 @@ def part_1():
     print(f"Part 1: Final (x, y) = ({x}, {y}). Product x*y = {x*y}.")
 
 
-def update_postiion_and_aim(direction: str, displacement: int, x: int, y: int, aim: int) -> Tuple[int, int, int]:
+def update_postiion_and_aim(
+    direction: str, displacement: int, x: int, y: int, aim: int
+) -> Tuple[int, int, int]:
     """
     Update (x, y, aim) based on direction and displacement instruction.
 

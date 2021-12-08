@@ -9,7 +9,7 @@ def parse_data(text: str):
 
 def load_data():
     with open(INPUT / f"day_{DAY:02d}.txt", "r") as f:
-        parse_data(f.read())
+        return parse_data(f.read())
 
 
 def part_1(data):

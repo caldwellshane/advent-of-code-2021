@@ -1,6 +1,6 @@
 TEST_DATA = """
 \n
- """
+"""
 
 
 def test_parse_data():
